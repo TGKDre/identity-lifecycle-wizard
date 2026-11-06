@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install modules
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck -MinimumVersion 5.0
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+
+      - name: Lint (errors only)
+        shell: pwsh
+        run: |
+          $issues = Invoke-ScriptAnalyzer -Path ./src -Recurse -Severity Error
+          if ($issues) { $issues | Format-Table -AutoSize | Out-String | Write-Host; exit 1 }
+          Write-Host "No analyzer errors."
+
+      - name: Pester tests
+        shell: pwsh
+        run: |
+          Import-Module Pester -MinimumVersion 5.0
+          $r = Invoke-Pester -Path ./tests -PassThru -CI
+          if ($r.FailedCount -gt 0) { exit 1 }
+
+      - name: Dry-run smoke test
+        shell: pwsh
+        run: ./src/Invoke-LifecycleWizard.ps1 -Mode Onboarding -NonInteractive

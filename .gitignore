@@ -1,0 +1,15 @@
+# Logs and run output (never commit real run data)
+logs/
+*.log
+output/
+
+# Secrets and local config
+config/lifecycle.local.psd1
+*.secret
+*.credential
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
