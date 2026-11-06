@@ -41,6 +41,17 @@ pwsh ./src/Invoke-LifecycleWizard.ps1 -Mode Onboarding `
 It prints the planned steps, asks for one approval, then walks through them with
 `[DRY-RUN]` previews. Nothing is created.
 
+Offboarding works the same way, with a hard safety guard:
+
+```powershell
+pwsh ./src/Invoke-LifecycleWizard.ps1 -Mode Offboarding `
+  -User @{ UPN='jane.doe@example.com'; LastDay='2026-11-01'; ForwardTo='pat.lead@example.com'; AutoReply='true' }
+```
+
+If the person's last day has not actually passed, the run halts immediately with
+`[STOP]` and touches nothing. That guard is the whole reason offboarding is scary;
+the wizard refuses to guess.
+
 To run for real on Windows with the real connectors wired in:
 
 ```powershell
